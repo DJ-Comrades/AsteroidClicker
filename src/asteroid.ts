@@ -9,10 +9,8 @@ export interface Asteroid {
 
 
 export function isOnCanvas(asteroid: Asteroid, canvasSize: number): boolean {
-    return !(asteroid.x + asteroid.radius < 0 || 
-             asteroid.x - asteroid.radius > canvasSize || 
-             asteroid.y + asteroid.radius < 0 || 
-             asteroid.y - asteroid.radius > canvasSize);
+    return !(asteroid.x + asteroid.radius < 0 || asteroid.x - asteroid.radius > canvasSize ||
+        asteroid.y + asteroid.radius < 0 || asteroid.y - asteroid.radius > canvasSize)
 }
 
 export function createAsteroid(canvasSize: number): Asteroid {

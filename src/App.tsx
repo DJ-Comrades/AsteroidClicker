@@ -16,23 +16,23 @@ function App() {
     setMoney((money) => money - value)
   }
 
-  const space =
-    <div>
-      <h1 className='text-3xl'>Click asteroids</h1>
-      <br></br>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Space earnMoney={handleSpaceThing} />
-        </div>
-        <div>
-          <h2 className='underline text-2xl'>
-            Shop
-          </h2>
-          <Shop currentMoney={money} spendMoney={handleShop}/>
-        </div>
+  const app =
+  <div className="min-h-screen bg-gray-800 text-white p-6">
+    <h1 className='text-4xl font-bold mb-6 text-center'>Click Asteroids</h1>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Space section */}
+      <div className="bg-gray-900 p-4 rounded-lg shadow-lg">
+        <Space earnMoney={handleSpaceThing} />
+      </div>
+      
+      {/* Shop section */}
+      <div className="bg-gray-900 p-4 rounded-lg shadow-lg">
+        <h2 className='underline text-3xl mb-4'>Shop</h2>
+        <Shop currentMoney={money} spendMoney={handleShop} />
       </div>
     </div>
-  return space;
+  </div>
+  return app;
 }
 
 export default App
