@@ -11,11 +11,13 @@ interface Asteroid {
     radius: number;
 }
 
-function Space(){
+function Space({earnMoney}: { earnMoney: (value: number) => void; }){
+    
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
-    
-    
+    const [asteroids, setAsteroids] = useState<Asteroid[]>([])
+    const requestId = useRef<number>();
+    const previousTimeRef = useRef<number>();
 
     function getCanvas() {
         const canvas = canvasRef.current;
@@ -72,20 +74,19 @@ function Space(){
                     x: asteroid.x + asteroid.vx * deltaTime,
                     y: asteroid.y + asteroid.vy * deltaTime,
                 })).filter(asteroid => isOnCanvas(asteroid));
-                console.log(updated.length); // Now this will reflect the current length
                 return updated
             });
         }
         previousTimeRef.current = time;
         requestId.current = requestAnimationFrame(updateAsteroids);
-    }
 
-    const [asteroids, setAsteroids] = useState<Asteroid[]>([])
-    const requestId = useRef<number>();
-    const previousTimeRef = useRef<number>();
+    }
     function init() {
         
         const canvas = getCanvas();
+        canvas.addEventListener("mousedown", function(e) {
+            handleClick(canvas, e)
+        });
         canvas.width = SIZE;
         canvas.height = SIZE;
         requestId.current = requestAnimationFrame(updateAsteroids)
@@ -101,6 +102,7 @@ function Space(){
         if (asteroids.length >= 10) {
             return
         }
+        const velocityScale = 0.6
         const edge = Math.floor(Math.random() * 4)
         let x, y, vx, vy;
         const radius = Math.random() * 15 + 10
@@ -108,44 +110,69 @@ function Space(){
             case 0: // Bot
                 x = Math.random() * SIZE;
                 y = SIZE + radius;
-                vx = Math.random() - 0.5
-                vy = Math.random()
+                vx = Math.random()*0.5 - 0.25
+                vy = Math.random()*-0.4
                 break;
             case 1: // Top
                 x = Math.random() * SIZE;
                 y = 0 - radius;
-                vx = Math.random() - 0.5
-                vy = Math.random() * -1
+                vx = Math.random()*0.5 - 0.25
+                vy = Math.random()*0.4
                 break;
             case 2: // Left
                 x = 0 - radius;
                 y = Math.random() * SIZE;
-                vx = Math.random()
-                vy = Math.random() - 0.5
+                vx = Math.random() * 0.4
+                vy = Math.random()*0.5 - 0.25
                 break;
             case 3: // Right
                 x = SIZE + radius;
                 y = Math.random() * SIZE;
-                vx = Math.random() * -1
-                vy = Math.random() - 0.5
+                vx = Math.random() * -0.4   
+                vy = Math.random()*0.5 - 0.25
                 break;
             default:
-                x = 0
-                y = 0
-                vx = 0
-                vy = 0
+                throw Error("wtf")
         }
         const newAsteroid: Asteroid = {
             x: x,
             y: y,
             radius: radius,
-            vx: vx,
-            vy: vy
+            vx: vx * velocityScale,
+            vy: vy * velocityScale
         }
         setAsteroids([...asteroids, newAsteroid])
     }
 
-    return <canvas ref={canvasRef} />
+    function handleClick(canvas: HTMLCanvasElement, event:MouseEvent){
+        const mousePos = getCursorPosition(canvas, event)
+        setAsteroids((asteroids)=>asteroids.filter(item =>{
+            if (isInsideAsteroid(item, mousePos)){
+                earnMoney(3);
+                return false;
+            } else { console.log("unlucky!"); return true;}}))
+        
+    }
+
+    function getDistance(x1: number, x2: number, y1: number, y2: number){
+        const a = x1 - x2;
+        const b = y1 - y2;
+        return Math.sqrt( a*a + b*b );
+    }
+
+    function isInsideAsteroid(asteroid: Asteroid, mousePos:{x: number, y: number}) {
+        const d = getDistance(mousePos.x, asteroid.x, mousePos.y, asteroid.y)
+        return d < asteroid.radius
+
+    }
+    function getCursorPosition(canvas: HTMLCanvasElement, event: MouseEvent) {
+        const rect = canvas.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        return {x,y}
+    }
+
+    return <canvas ref={canvasRef}/>
 
 }
 
