@@ -9,6 +9,7 @@ interface Asteroid {
     vx: number;// velocity x
     vy: number; // velocity y
     radius: number;
+    health: number
 }
 
 function Space({earnMoney}: { earnMoney: (value: number) => void; }){
@@ -18,6 +19,7 @@ function Space({earnMoney}: { earnMoney: (value: number) => void; }){
     const [asteroids, setAsteroids] = useState<Asteroid[]>([])
     const requestId = useRef<number>();
     const previousTimeRef = useRef<number>();
+    const moneyBuffer = useRef<number>(0);
 
     function getCanvas() {
         const canvas = canvasRef.current;
@@ -99,7 +101,7 @@ function Space({earnMoney}: { earnMoney: (value: number) => void; }){
     useInterval(addAsteroid, 2000)
 
     function addAsteroid() {
-        if (asteroids.length >= 10) {
+        if (asteroids.length >= 100) {
             return
         }
         const velocityScale = 0.6
@@ -139,19 +141,26 @@ function Space({earnMoney}: { earnMoney: (value: number) => void; }){
             y: y,
             radius: radius,
             vx: vx * velocityScale,
-            vy: vy * velocityScale
+            vy: vy * velocityScale,
+            health: 100
         }
         setAsteroids([...asteroids, newAsteroid])
     }
 
+    useEffect(() => {
+        if (moneyBuffer.current > 0) {
+            earnMoney(moneyBuffer.current * 3); // Call earnMoney after state update
+            moneyBuffer.current = 0; // Reset the counter
+        }
+    }, [asteroids, earnMoney]);
+
     function handleClick(canvas: HTMLCanvasElement, event:MouseEvent){
         const mousePos = getCursorPosition(canvas, event)
-        setAsteroids((asteroids)=>asteroids.filter(item =>{
+        setAsteroids((asteroids) => asteroids.filter(item =>{
             if (isInsideAsteroid(item, mousePos)){
-                earnMoney(3);
+                moneyBuffer.current++;
                 return false;
-            } else { console.log("unlucky!"); return true;}}))
-        
+            } else { return true;}}))
     }
 
     function getDistance(x1: number, x2: number, y1: number, y2: number){
